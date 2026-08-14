@@ -49,7 +49,11 @@ if (navToggle && navMenu) {
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      setNavState(false);
+      const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        setNavState(false);
+        navToggle.focus();
+      }
     }
   });
 
@@ -112,7 +116,13 @@ if ('IntersectionObserver' in window && sections.length && navLinks.length) {
       if (!entry.isIntersecting) return;
       const id = entry.target.getAttribute('id');
       navLinks.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+        const isActive = link.getAttribute('href') === `#${id}`;
+        link.classList.toggle('active', isActive);
+        if (isActive) {
+          link.setAttribute('aria-current', 'location');
+        } else {
+          link.removeAttribute('aria-current');
+        }
       });
     });
   }, { rootMargin: '-35% 0px -55% 0px', threshold: 0.01 });
