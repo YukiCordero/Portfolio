@@ -79,14 +79,14 @@ p { text-wrap: pretty; }
 .portrait-frame { padding: 0; border: 1px solid rgba(209, 181, 129, .3); border-radius: 160px 160px 12px 12px; background: #252c35; box-shadow: none; }
 .portrait-frame img { height: auto; border-radius: inherit; aspect-ratio: 4 / 5; filter: saturate(.76) contrast(1.025); }
 .portrait-frame::before, .portrait-frame::after { display: none; }
-.orbit-badge { top: auto; right: 1rem; bottom: 1rem; border-radius: 5px; padding: .5rem .75rem; font-size: .58rem; font-weight: 500; box-shadow: none; }
-.system-card { position: static; width: 100%; margin: 1.5rem 0 0; padding: 1rem 0 0; border: 0; border-top: 1px solid var(--line-strong); border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
-.system-card-head { font-size: .73rem; margin-bottom: .7rem; }
-.system-card-head strong { font-weight: 500; }
-.status-dot { width: 5px; height: 5px; box-shadow: none; background: var(--gold); animation: none; }
-.system-row { grid-template-columns: 4rem 1fr; gap: .7rem; border: 0; padding: .3rem 0; align-items: baseline; }
-.system-row span { font-size: .56rem; font-weight: 500; }
-.system-row strong { font-size: .66rem; line-height: 1.5; font-weight: 400; color: var(--muted); }
+.portrait-caption { display: grid; gap: .15rem; margin: 1.1rem 0 0; }
+.portrait-caption strong { color: var(--cream); font-size: 1.1rem; font-weight: 500; letter-spacing: -.02em; }
+.portrait-caption span { color: var(--muted); font-size: .78rem; }
+.hero-working-card { margin-top: 1.15rem; padding-top: 1rem; border-top: 1px solid var(--line-strong); }
+.hero-working-card h2 { margin: 0; font-family: var(--font-body); font-size: .82rem; font-weight: 600; line-height: 1.5; letter-spacing: 0; }
+.hero-working-card ul { display: grid; gap: .45rem; margin: .8rem 0 0; padding: 0; list-style: none; }
+.hero-working-card li { position: relative; padding-left: 1.25rem; color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.hero-working-card li::before { content: "✓"; position: absolute; left: 0; color: var(--gold); font-size: .75rem; }
 .hero .reveal { opacity: 1; transform: none; }
 
 /* Warm paper provides a deliberate pause between the introduction and deeper content. */
@@ -300,8 +300,6 @@ a.contact-item:hover strong { color: var(--gold-2); }
   .portrait-shell { width: 100%; max-width: none; }
   .portrait-frame { border-radius: 130px 130px 12px 12px; }
   .portrait-frame img { aspect-ratio: 1 / 1.1; object-position: center 35%; }
-  .orbit-top { right: 1rem; top: auto; bottom: 1rem; }
-  .system-card { width: 100%; max-width: none; margin-top: 1.2rem; }
   .hero-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero-meta div:last-child { grid-column: 1 / -1; }
   .hero-actions, .contact-actions { display: flex; }
