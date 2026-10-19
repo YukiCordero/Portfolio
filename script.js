@@ -8,6 +8,7 @@ const navToggleLabel = document.querySelector('[data-nav-toggle-label]');
 const progressBar = document.querySelector('[data-scroll-progress]');
 const yearEl = document.querySelector('[data-year]');
 const copyButton = document.querySelector('[data-copy-email]');
+const header = document.querySelector('[data-header]');
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 if (yearEl) {
@@ -32,7 +33,7 @@ if (navToggle && navMenu) {
   });
 
   navMenu.addEventListener('click', (event) => {
-    if (event.target instanceof HTMLAnchorElement) {
+    if (event.target instanceof Element && event.target.closest('a')) {
       setNavState(false);
     }
   });
@@ -65,16 +66,26 @@ if (navToggle && navMenu) {
 }
 
 function updateScrollProgress() {
-  if (!progressBar) return;
-
   const scrollTop = window.scrollY;
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  progressBar.style.width = `${Math.min(progress, 100)}%`;
+  const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+  if (progressBar) progressBar.style.transform = `scaleX(${Math.max(0, Math.min(progress, 1))})`;
+  if (header) header.classList.toggle('is-scrolled', scrollTop > 16);
 }
 
-window.addEventListener('scroll', updateScrollProgress, { passive: true });
-window.addEventListener('resize', updateScrollProgress);
+let scrollFrame = null;
+function scheduleScrollUpdate() {
+  if (scrollFrame !== null) return;
+  scrollFrame = requestAnimationFrame(() => {
+    updateScrollProgress();
+    updateActiveNavigation();
+    scrollFrame = null;
+  });
+}
+window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
+window.addEventListener('resize', scheduleScrollUpdate);
+window.addEventListener('load', scheduleScrollUpdate);
+if ('ResizeObserver' in window) new ResizeObserver(scheduleScrollUpdate).observe(document.body);
 updateScrollProgress();
 
 function initRevealAnimations() {
@@ -94,7 +105,7 @@ function initRevealAnimations() {
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.14 });
+    }, { threshold: 0, rootMargin: '0px 0px -24px 0px' });
 
     root.classList.add('reveal-ready');
     revealItems.forEach((item) => revealObserver.observe(item));
@@ -110,25 +121,20 @@ const navLinks = [...document.querySelectorAll('.nav-menu a[href^="#"]')];
 const navTargetIds = new Set(navLinks.map((link) => link.getAttribute('href')?.slice(1)).filter(Boolean));
 const sections = [...document.querySelectorAll('main section[id]')].filter((section) => navTargetIds.has(section.id));
 
-if ('IntersectionObserver' in window && sections.length && navLinks.length) {
-  const activeObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      const id = entry.target.getAttribute('id');
-      navLinks.forEach((link) => {
-        const isActive = link.getAttribute('href') === `#${id}`;
-        link.classList.toggle('active', isActive);
-        if (isActive) {
-          link.setAttribute('aria-current', 'location');
-        } else {
-          link.removeAttribute('aria-current');
-        }
-      });
-    });
-  }, { rootMargin: '-35% 0px -55% 0px', threshold: 0.01 });
-
-  sections.forEach((section) => activeObserver.observe(section));
+function updateActiveNavigation() {
+  const readingLine = Math.min(window.innerHeight * 0.35, 240);
+  const currentSection = sections.find((section) => {
+    const bounds = section.getBoundingClientRect();
+    return bounds.top <= readingLine && bounds.bottom > readingLine;
+  });
+  navLinks.forEach((link) => {
+    const isActive = Boolean(currentSection && link.getAttribute('href') === `#${currentSection.id}`);
+    link.classList.toggle('active', isActive);
+    if (isActive) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
 }
+updateActiveNavigation();
 
 function initMetricCountUp() {
   const counters = [...document.querySelectorAll('[data-count]')];
@@ -165,31 +171,6 @@ function initMetricCountUp() {
 }
 
 initMetricCountUp();
-
-function initPointerSpotlight() {
-  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!finePointer || prefersReducedMotion) return;
-
-  let rafId = null;
-  let nextX = window.innerWidth / 2;
-  let nextY = window.innerHeight * 0.18;
-
-  root.classList.add('pointer-ready');
-
-  function updateSpotlight() {
-    root.style.setProperty('--spotlight-x', `${nextX}px`);
-    root.style.setProperty('--spotlight-y', `${nextY}px`);
-    rafId = null;
-  }
-
-  window.addEventListener('pointermove', (event) => {
-    nextX = event.clientX;
-    nextY = event.clientY;
-    if (rafId === null) rafId = requestAnimationFrame(updateSpotlight);
-  }, { passive: true });
-}
-
-initPointerSpotlight();
 
 async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
